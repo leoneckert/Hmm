@@ -197,4 +197,14 @@ function init(){
 }
 
 
-window.addEventListener("load", init);
+var isChrome = !!window.chrome;
+function notChrome(){
+    document.body.innerHTML = "Only works on Chrome, my friend.";
+    document.head.innerHTML = "";
+}
+
+if(!isChrome){
+    window.addEventListener("load", notChrome);
+}else{
+    window.addEventListener("load", init);
+}
