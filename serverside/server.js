@@ -27,7 +27,7 @@ function requestHandler(req, res) {
             }
         );
     }else{
-        console.log("some full just asked for /favicon.ico");
+        console.log("some fool just asked for /favicon.ico");
     }
 }
 
