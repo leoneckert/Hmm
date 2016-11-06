@@ -6,35 +6,22 @@ function init(){
     //
     socket.on('connect', function() {
         console.log("Connected");
-
         drawBoxes();
-
-
         socket.on('boxdata', function(data){
-            console.dir(data);
             processBoxData(data);
         })
-
         function processBoxData(data){
-
             var IDs = Object.keys(data);
             for(var i = 0; i < IDs.length; i++){
-
                 var id = IDs[i];
-
                 someOneCheckedABox(id, data[id]);
             }
         }
         function iCheckedABox(id){
-
             var b = document.getElementById(id);
-            console.log("iCheckedABox", id, b.checked);
             socket.emit('iCheckedABox', {"id": id, "value": b.checked});
-
         }
-
         function someOneCheckedABox(id, value){
-            console.log(id,value);
             var b = document.getElementById(id);
             if(b){
                 if(b.checked != value){
@@ -42,8 +29,6 @@ function init(){
                 }
             }
         }
-
-
         function makeBox(tag, newline){
             if(newline) document.getElementById("mainWrapper").appendChild(document.createElement("br"));
             var wrapper = document.createElement("div");
@@ -67,11 +52,6 @@ function init(){
             wrapper.appendChild(box);
             document.getElementById("mainWrapper").appendChild(wrapper);
         }
-
-
-
-
-
         function drawBoxes(){
             var w = getGameDims()["w"];
             var h = getGameDims()["h"];
@@ -90,7 +70,6 @@ function init(){
                 }
             }
         }
-
         function getGameDims(){
             return {"w":window.innerWidth, "h":window.innerHeight}
         }
@@ -98,73 +77,72 @@ function init(){
 
         socket.on("yourPeerID", function(MyPeerID){
             console.log(MyPeerID);
-            connections = {};
-
+            var connections = {};
+            var second = false;
             document.addEventListener('mousemove', function(evt){
-                console.log("recording datatata");
-                conIDs = Object.keys(connections)
-                for(var c = 0; c < conIDs.length; c++){
-                    connections[conIDs[c]].send({x: evt.clientX, y: evt.clientY});
+                if(!second){
+                    conIDs = Object.keys(connections)
+                    for(var c = 0; c < conIDs.length; c++){
+                        connections[conIDs[c]].send({x: evt.clientX, y: evt.clientY});
+                    }
+                    second = true;
+                }else{
+                    second = false;
                 }
             });
 
-            peer = new Peer(MyPeerID, {host: 'liveweb.itp.io', port: 9001, path: '/'});
-			peer.on('open', function(id) {
+            var peer = new Peer(MyPeerID, {host: 'liveweb.itp.io', port: 9001, path: '/'});
+
+            peer.on('open', function(id) {
 			  console.log('Ready to make calls. My id', id);
               socket.emit('readyToCall');
 			});
+
             peer.on('error', function(message){
                 console.log(message);
             });
 
+            function initCursor(conn){
+                if(!connections[conn.peer]){
+                    connections[conn.peer] = conn;
+                    var the_mouse = document.createElement('div');
+                    var the_img = document.createElement('img');
+                    the_img.src = "http://leoneckert.com/mouse2.png";
+                    the_img.style.width = "29px";
+                    the_mouse.appendChild(the_img);
+                    the_mouse.id = String(conn.peer) + "_mouse";
+                    the_mouse.style.left = "0px";
+                    the_mouse.style.top = "0px";
+                    the_mouse.style.marginLeft = "-10px";
+                    the_mouse.style.marginTop = "-7px";
+                    the_mouse.style.position = "absolute";
+                    document.body.appendChild(the_mouse);
+                }
+            }
+
             peer.on('connection', function(conn) {
-					conn.on('open', function() {
-						console.log("GOT A CALL");
-                        if(!connections[conn.peer]){
-    						connections[conn.peer] = conn;
-                            var the_mouse = document.createElement('div');
-                            var the_img = document.createElement('img');
-                            the_img.src = "http://leoneckert.com/mouse2.png";
-                            the_img.style.width = "29px";
-                            the_mouse.appendChild(the_img);
-                            the_mouse.id = String(conn.peer) + "_mouse";
-                            the_mouse.style.left = "0px";
-                            the_mouse.style.top = "0px";
-                            the_mouse.style.marginLeft = "-10px";
-                            the_mouse.style.marginTop = "-7px";
-                            the_mouse.style.position = "absolute";
-                            document.body.appendChild(the_mouse);
-    					}
-					});
-					conn.on('data', function(data) {
-                        console.log("getting data");
-						var m = document.getElementById(String(conn.peer) + "_mouse");
-						m.style.left = data.x + "px";
-                        m.style.top = data.y + "px";
-					});
+				conn.on('open', function() {
+                    initCursor(conn);
+				});
+
+				conn.on('data', function(data) {
+                    console.log("getting data");
+					var m = document.getElementById(String(conn.peer) + "_mouse");
+					m.style.left = data.x + "px";
+                    m.style.top = data.y + "px";
+				});
 			});
 
             var makeConnection = function(id) {
                 console.log("calling", id);
-				conn = peer.connect(id);
+				var conn = peer.connect(id);
 
                 conn.on('open', function(data) {
-                    if(!connections[conn.peer]){
-						connections[conn.peer] = conn;
-                        var the_mouse = document.createElement('div');
-                        var the_img = document.createElement('img');
-                        the_img.src = "http://leoneckert.com/mouse2.png";
-                        the_img.style.width = "29px";
-                        the_mouse.appendChild(the_img);
-                        the_mouse.id = String(conn.peer) + "_mouse";
-                        the_mouse.style.left = "0px";
-                        the_mouse.style.top = "0px";
-                        the_mouse.style.marginLeft = "-10px";
-                        the_mouse.style.marginTop = "-7px";
-                        the_mouse.style.position = "absolute";
-                        document.body.appendChild(the_mouse);
-					}
+                    initCursor(conn);
 				});
+                conn.on('error', function(err) {
+                    console.log(err);
+                });
                 conn.on('data', function(data) {
                     console.log("getting data");
                     var m = document.getElementById(String(conn.peer) + "_mouse");
@@ -178,14 +156,15 @@ function init(){
                     makeConnection(data[i]);
                 }
             });
-            function remove(id) {
+            function remove(data) {
+                delete connections[data];
+                var id = String(data) + "_mouse";
                 var elem = document.getElementById(id);
-                return elem.parentNode.removeChild(elem);
+                elem.parentNode.removeChild(elem);
             }
             socket.on("deleteThisCursor", function(data){
                 console.log(data, "delete this cursor");
-                var id = String(data) + "_mouse";
-                remove(id);
+                remove(data);
             });
 
         });
