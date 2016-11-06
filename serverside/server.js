@@ -8,28 +8,27 @@ httpServer.listen(4445);
 function requestHandler(req, res) {
 
     var parsedUrl = url.parse(req.url).pathname;
-    console.log("The Request is: " + parsedUrl);
+    // console.log("The Request is: " + parsedUrl);
     if(parsedUrl === "/") parsedUrl = "/index.html";
-    console.log("The Request is: " + parsedUrl);
-    console.log(__dirname + "/.." + parsedUrl);
-
-    fs.readFile(__dirname + "/.." + parsedUrl,
-        // Callback function for reading
-        function (err, data) {
-            // if there is an error
-            if (err) {
-                res.writeHead(500);
-                return res.end('Error loading ' + parsedUrl.pathname);
+    // console.log("The Request is: " + parsedUrl);
+    // console.log(__dirname + "/.." + parsedUrl);
+    if(parsedUrl != "/favicon.ico"){
+        fs.readFile(__dirname + "/.." + parsedUrl,
+            // Callback function for reading
+            function (err, data) {
+                // if there is an error
+                if (err) {
+                    res.writeHead(500);
+                    return res.end('Error loading ' + parsedUrl.pathname);
+                }
+                // Otherwise, send the data, the contents of the file
+                res.writeHead(200);
+                res.end(data);
             }
-            // Otherwise, send the data, the contents of the file
-            res.writeHead(200);
-            res.end(data);
-        }
-    );
-
-
-    // res.writeHead(200);
-    // res.end("Life is wonderful");
+        );
+    }else{
+        console.log("some full just asked for /favicon.ico");
+    }
 }
 
 
@@ -67,13 +66,13 @@ io.sockets.on('connection',
         // When this user emits, client side: socket.emit('otherevent',some data);
         socket.on('iCheckedABox', function(data) {
             // Data comes in as whatever was sent, including objects
-            console.log("someone checked a box:" + data);
-            console.log("id", data["id"]);
-            console.log("value", data["value"]);
+            // console.log("someone checked a box:" + data);
+            // console.log("id", data["id"]);
+            // console.log("value", data["value"]);
             var id = data["id"];
             var value = data["value"];
             boxes[id] = value;
-            console.log(boxes);
+            // console.log(boxes);
 
 
             // Send it to all of the clients
@@ -94,7 +93,7 @@ io.sockets.on('connection',
 
         // When this user emits, client side: socket.emit('otherevent',some data);
         socket.on('readyToCall', function() {
-            console.log(active[socket.id], "ready to call");
+            // console.log(active[socket.id], "ready to call");
             sendActiveTo(socket.id, function(numbersToCall){
                 io.to(socket.id).emit('callThose', numbersToCall);
             });
@@ -103,12 +102,12 @@ io.sockets.on('connection',
 
         socket.on('disconnect', function() {
             console.log("Client has disconnected " + socket.id);
-            console.log(active);
+            // console.log(active);
 
             socket.broadcast.emit('deleteThisCursor', active[socket.id]);
 
             delete active[socket.id];
-            console.log(active);
+            // console.log(active);
 
 
 
