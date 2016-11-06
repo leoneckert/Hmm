@@ -96,6 +96,102 @@ function init(){
         }
 
 
+        socket.on("yourPeerID", function(MyPeerID){
+            console.log(MyPeerID);
+            connections = {};
+
+            document.addEventListener('mousemove', function(evt){
+                console.log("recording datatata");
+                conIDs = Object.keys(connections)
+                for(var c = 0; c < conIDs.length; c++){
+                    connections[conIDs[c]].send({x: evt.clientX, y: evt.clientY});
+                }
+            });
+
+            peer = new Peer(MyPeerID, {host: 'liveweb.itp.io', port: 9001, path: '/'});
+			peer.on('open', function(id) {
+			  console.log('Ready to make calls. My id', id);
+              socket.emit('readyToCall');
+			});
+            peer.on('error', function(message){
+                console.log(message);
+            });
+
+            peer.on('connection', function(conn) {
+					conn.on('open', function() {
+						console.log("GOT A CALL");
+                        if(!connections[conn.peer]){
+    						connections[conn.peer] = conn;
+                            var the_mouse = document.createElement('div');
+                            var the_img = document.createElement('img');
+                            the_img.src = "http://leoneckert.com/mouse2.png";
+                            the_img.style.width = "29px";
+                            the_mouse.appendChild(the_img);
+                            the_mouse.id = String(conn.peer) + "_mouse";
+                            the_mouse.style.left = "0px";
+                            the_mouse.style.top = "0px";
+                            the_mouse.style.marginLeft = "-10px";
+                            the_mouse.style.marginTop = "-7px";
+                            the_mouse.style.position = "absolute";
+                            document.body.appendChild(the_mouse);
+    					}
+					});
+					conn.on('data', function(data) {
+                        console.log("getting data");
+						var m = document.getElementById(String(conn.peer) + "_mouse");
+						m.style.left = data.x + "px";
+                        m.style.top = data.y + "px";
+					});
+			});
+
+            var makeConnection = function(id) {
+                console.log("calling", id);
+				conn = peer.connect(id);
+
+                conn.on('open', function(data) {
+                    if(!connections[conn.peer]){
+						connections[conn.peer] = conn;
+                        var the_mouse = document.createElement('div');
+                        var the_img = document.createElement('img');
+                        the_img.src = "http://leoneckert.com/mouse2.png";
+                        the_img.style.width = "29px";
+                        the_mouse.appendChild(the_img);
+                        the_mouse.id = String(conn.peer) + "_mouse";
+                        the_mouse.style.left = "0px";
+                        the_mouse.style.top = "0px";
+                        the_mouse.style.marginLeft = "-10px";
+                        the_mouse.style.marginTop = "-7px";
+                        the_mouse.style.position = "absolute";
+                        document.body.appendChild(the_mouse);
+					}
+				});
+                conn.on('data', function(data) {
+                    console.log("getting data");
+                    var m = document.getElementById(String(conn.peer) + "_mouse");
+                    m.style.left = data.x + "px";
+                    m.style.top = data.y + "px";
+                });
+			};
+
+            socket.on("callThose", function(data){
+                for(var i = 0; i < data.length; i++){
+                    makeConnection(data[i]);
+                }
+            });
+            function remove(id) {
+                var elem = document.getElementById(id);
+                return elem.parentNode.removeChild(elem);
+            }
+            socket.on("deleteThisCursor", function(data){
+                console.log(data, "delete this cursor");
+                var id = String(conn.peer) + "_mouse";
+                remove(id);
+            });
+
+        });
+
+
+
 
 
 
@@ -111,3 +207,68 @@ function init(){
 
 
 window.addEventListener("load", init);
+
+
+
+
+
+
+
+
+//
+// peer = new Peer('leon', {host: 'liveweb.itp.io', port: 9001, path: '/'});
+//
+// 				peer.on('open', function(id) {
+// 				  console.log('My peer ID is: ' + id);
+// 				  mypeerid = id;
+// 				});
+//
+//                 peer.on('error', function(message){
+//                     console.log(message);
+//                 });
+//
+// 				peer.on('connection', function(conn) {
+// 					connection = conn;
+// 					connection.on('open', function() {
+// 						document.getElementById('chatlog').innerHTML += "Connection Established<br>";
+// 					});
+//
+// 					if(!connections[connection.peer]){
+// 						connections[connection.peer] = connection;
+// 						var the_mouse = document.createElement('div');
+//
+// 						var the_img = document.createElement('img');
+// 						the_img.src = "http://leoneckert.com/mouse2.png";
+// 						the_img.style.width = "29px";
+// 						the_mouse.appendChild(the_img);
+//
+// 						var the_name = document.createElement('p');
+// 						the_name.innerHTML = connection.peer;
+// 						the_name.style.marginTop = "0px"
+// 						the_mouse.appendChild(the_name);
+//
+// 						the_mouse.id = String(connection.peer) + "_mouse";
+// 						the_mouse.style.left = "0px";
+//                         the_mouse.style.top = "0px";
+// 						the_mouse.style.position = "absolute";
+//
+//
+// 						document.body.appendChild(the_mouse);
+// 					}
+// 					// connections.push(connection);
+//
+// 					connection.on('data', function(data) {
+//
+// 						// document.getElementById('chatlog').innerHTML += data + "<br>";
+//                         // console.log(connection.peer);
+// 						var m = document.getElementById(String(connection.peer) + "_mouse");
+//
+//                         // // document.getElementById('othermouse').style.left = data.x + "px";
+//                         // // document.getElementById('othermouse').style.top = data.y + "px";
+// 						m.style.left = data.x + "px";
+//                         m.style.top = data.y + "px";
+//
+//                         // broadCastMessage(data);
+// 					});
+//
+// 				});

@@ -33,7 +33,19 @@ function requestHandler(req, res) {
 }
 
 
+// from here: http://stackoverflow.com/a/105074
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
+
 var boxes = {};
+var active = {};
 
 // WebSocket Portion
 // WebSockets work with the HTTP server
@@ -48,6 +60,9 @@ io.sockets.on('connection',
         console.log("We have a new client: " + socket.id);
         // socket.send('boxdata', boxes);
         io.to(socket.id).emit('boxdata', boxes);
+        active[socket.id] = String(guid());
+        io.to(socket.id).emit('yourPeerID', active[socket.id]);
+
 
         // When this user emits, client side: socket.emit('otherevent',some data);
         socket.on('iCheckedABox', function(data) {
@@ -64,12 +79,39 @@ io.sockets.on('connection',
             // Send it to all of the clients
             socket.broadcast.emit('boxdata', boxes);
             // io.sockets.emit('boxdata', boxes);
+        });
 
+        function sendActiveTo(socketID, callback){
+            allSocketIDs = Object.keys(active);
+            idsToSend = [];
+            for(var i = 0; i < allSocketIDs.length; i++){
+                if(allSocketIDs[i] != socketID){
+                    idsToSend.push(active[allSocketIDs[i]]);
+                }
+            }
+            callback(idsToSend);
+        }
+
+        // When this user emits, client side: socket.emit('otherevent',some data);
+        socket.on('readyToCall', function() {
+            console.log(active[socket.id], "ready to call");
+            sendActiveTo(socket.id, function(numbersToCall){
+                io.to(socket.id).emit('callThose', numbersToCall);
+            });
         });
 
 
-        // socket.on('disconnect', function() {
-        //     console.log("Client has disconnected " + socket.id);
-        // });
+        socket.on('disconnect', function() {
+            console.log("Client has disconnected " + socket.id);
+            console.log(active);
+
+            socket.broadcast.emit('deleteThisCursor', active[socket.id]);
+
+            delete active[socket.id];
+            console.log(active);
+
+
+
+        });
     }
 );
