@@ -184,7 +184,7 @@ function init(){
             }
             socket.on("deleteThisCursor", function(data){
                 console.log(data, "delete this cursor");
-                var id = String(conn.peer) + "_mouse";
+                var id = String(data) + "_mouse";
                 remove(id);
             });
 
