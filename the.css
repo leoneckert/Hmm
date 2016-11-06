@@ -3,3 +3,47 @@ body{
     line-height: 0px;
     overflow:hidden;
 }
+
+.boxWrapper{
+    width: 13px;
+    height: 13px;
+    display: inline-block;
+    text-align: center;
+    position: relative;
+}
+
+
+.a_checkbox{
+    margin: 0px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 12px;
+    /*height: 12px;*/
+}
+.otherCursor{
+    left: 0px;
+    top: 0px;
+    margin-left: -10px;
+    margin-top: -7px;
+    position: absolute;
+    pointer-events: none;
+}
+
+.cursorImage{
+    width: 29px;
+}
+
+.otherName{
+    margin-top: 0px;
+    font-size: 0.5em;
+    cursor: default;
+}
+
+#myname{
+    margin-top: 0px;
+    font-size: 0.5em;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+}

@@ -32,20 +32,13 @@ function init(){
         function makeBox(tag, newline){
             if(newline) document.getElementById("mainWrapper").appendChild(document.createElement("br"));
             var wrapper = document.createElement("div");
-            wrapper.style.width = "13px";
-            wrapper.style.height = "13px";
-            wrapper.style.display = "inline-block";
-            wrapper.style.textAlign = "center";
-            wrapper.style.position = "relative";
+            wrapper.className = "boxWrapper";
+
             var box = document.createElement("input");
             box.type = "checkbox"
-            box.style.margin = "0px";
-            box.style.position = "absolute";
-            box.style.top = "0px";
-            box.style.left = "0px";
-            box.style.width = "12px";
-            box.style.width = "12px";
+            box.class = "a_checkbox"
             box.id = tag;
+
             box.addEventListener("change", function(){
                 iCheckedABox(tag)
             });
@@ -89,6 +82,10 @@ function init(){
                 }else{
                     second = false;
                 }
+
+                var my_name = document.getElementById("myname");
+                my_name.style.left = evt.x - 17 + "px";
+                my_name.style.top = evt.y + 20 + "px";
             });
 
             var peer = new Peer(MyPeerID, {host: 'liveweb.itp.io', port: 9001, path: '/'});
@@ -96,6 +93,17 @@ function init(){
             peer.on('open', function(id) {
 			  console.log('Ready to make calls. My id', id);
               socket.emit('readyToCall');
+
+              var my_name = document.createElement('p');
+              my_name.innerHTML = String(id);
+              my_name.id = "myname";
+
+            //   my_name.style.marginTop = "0px";
+            //   my_name.style.fontSize = "0.5em";
+            //   my_name.style.left = "0px";
+            //   my_name.style.top = "0px";
+            //   my_name.style.position = "absolute";
+              document.body.appendChild(my_name);
 			});
 
             peer.on('error', function(message){
@@ -106,16 +114,30 @@ function init(){
                 if(!connections[conn.peer]){
                     connections[conn.peer] = conn;
                     var the_mouse = document.createElement('div');
+                    the_mouse.className = "otherCursor";
+
                     var the_img = document.createElement('img');
                     the_img.src = "http://leoneckert.com/mouse2.png";
-                    the_img.style.width = "29px";
+                    the_img.className = "cursorImage";
+
                     the_mouse.appendChild(the_img);
                     the_mouse.id = String(conn.peer) + "_mouse";
-                    the_mouse.style.left = "0px";
-                    the_mouse.style.top = "0px";
-                    the_mouse.style.marginLeft = "-10px";
-                    the_mouse.style.marginTop = "-7px";
-                    the_mouse.style.position = "absolute";
+                    // the_mouse.style.left = "0px";
+                    // the_mouse.style.top = "0px";
+                    // the_mouse.style.marginLeft = "-10px";
+                    // the_mouse.style.marginTop = "-7px";
+                    // the_mouse.style.position = "absolute";
+                    // the_mouse.style.pointerEvents = "none";
+
+                    var the_name = document.createElement('p');
+					the_name.innerHTML = String(conn.peer);
+                    the_name.className = "otherName";
+
+					// the_name.style.marginTop = "0px";
+                    // the_name.style.fontSize = "0.5em";
+                    // the_name.style.cursor = "default";
+					the_mouse.appendChild(the_name);
+
                     document.body.appendChild(the_mouse);
                 }
             }
@@ -171,83 +193,8 @@ function init(){
 
 
 
-
-
-
-
-
-
-
-
-
-
     });
 }
 
 
 window.addEventListener("load", init);
-
-
-
-
-
-
-
-
-//
-// peer = new Peer('leon', {host: 'liveweb.itp.io', port: 9001, path: '/'});
-//
-// 				peer.on('open', function(id) {
-// 				  console.log('My peer ID is: ' + id);
-// 				  mypeerid = id;
-// 				});
-//
-//                 peer.on('error', function(message){
-//                     console.log(message);
-//                 });
-//
-// 				peer.on('connection', function(conn) {
-// 					connection = conn;
-// 					connection.on('open', function() {
-// 						document.getElementById('chatlog').innerHTML += "Connection Established<br>";
-// 					});
-//
-// 					if(!connections[connection.peer]){
-// 						connections[connection.peer] = connection;
-// 						var the_mouse = document.createElement('div');
-//
-// 						var the_img = document.createElement('img');
-// 						the_img.src = "http://leoneckert.com/mouse2.png";
-// 						the_img.style.width = "29px";
-// 						the_mouse.appendChild(the_img);
-//
-// 						var the_name = document.createElement('p');
-// 						the_name.innerHTML = connection.peer;
-// 						the_name.style.marginTop = "0px"
-// 						the_mouse.appendChild(the_name);
-//
-// 						the_mouse.id = String(connection.peer) + "_mouse";
-// 						the_mouse.style.left = "0px";
-//                         the_mouse.style.top = "0px";
-// 						the_mouse.style.position = "absolute";
-//
-//
-// 						document.body.appendChild(the_mouse);
-// 					}
-// 					// connections.push(connection);
-//
-// 					connection.on('data', function(data) {
-//
-// 						// document.getElementById('chatlog').innerHTML += data + "<br>";
-//                         // console.log(connection.peer);
-// 						var m = document.getElementById(String(connection.peer) + "_mouse");
-//
-//                         // // document.getElementById('othermouse').style.left = data.x + "px";
-//                         // // document.getElementById('othermouse').style.top = data.y + "px";
-// 						m.style.left = data.x + "px";
-//                         m.style.top = data.y + "px";
-//
-//                         // broadCastMessage(data);
-// 					});
-//
-// 				});
